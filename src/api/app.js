@@ -1,11 +1,12 @@
 
 'use strict';
 
-const restify = require('restify')
+const restify = require('restify'),
+      data = require('./prepare-data')
       ;
 
 function home(req, res, next) {
-  res.send('Small Node Seed');
+  res.send(data.get());
   next();
 }
 
