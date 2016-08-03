@@ -1,1 +1,45 @@
 
+$width: 600px;
+$height: 700px;
+
+h1 {
+  text-align: center;
+}
+
+#container {
+  margin: 0 auto;
+  width: $width;
+  height: $height;
+  background: white;
+}
+
+#boxplot {
+  width: $width;
+  height: $height;
+
+  border: 1px solid #ddd;
+}
+
+line.median, rect.quartile, line.min-max, line.min, line.max {
+  stroke: black;
+  stroke-width: 2;
+  fill: none;
+}
+
+rect.quartile {
+  fill: white;
+}
+
+circle.outlier {
+  fill: none;
+  stroke: lightgray;
+  stroke-width: 3;
+  r: 7;
+}
+
+text.boxplot {
+  fill: black;
+  stroke-width: 0;
+  font-size: 2em;
+}
+
