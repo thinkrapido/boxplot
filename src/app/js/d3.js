@@ -5,7 +5,7 @@ d3.json('/api', function(err, data) {
     return console.error(err);
   }
 
-  var svg = d3.select('#boxplot').data(data),
+  var svg = d3.select('#boxplot'),
       diagramWidth = +(svg.style('width').replace('px', '')),
       diagramHeight = +(svg.style('height').replace('px', ''))
       y = d3.scaleLinear()
@@ -15,9 +15,12 @@ d3.json('/api', function(err, data) {
       chart = svg.append('g')
           .attr('transform', 'translate(50, 40),scale(.8)'),
       boxplot = d3.box()
+                  .diagramWidth(diagramWidth)
+                  .displayLast(6)
       ;
 
   chart.call(axisLeft);
+  var container = chart.append('g');
 
   var boundary = [
         [{ x: 0, y: 95 }, { x: diagramWidth, y: 95 }],
@@ -31,7 +34,7 @@ d3.json('/api', function(err, data) {
       ;
 
   for (var i = 0; i < boundary.length; i++) {
-    chart.append('path')
+    container.append('path')
         .attr('d', lineFunction(boundary[i]))
         .attr('stroke', 'lightgray')
         .attr('stroke-width', 1)
@@ -39,21 +42,43 @@ d3.json('/api', function(err, data) {
       ;
   }
 
-  chart.call(boxplot);
+  container = chart.append('g').attr('class', 'boxplot');
+
+  container.selectAll('g.boxplot').data(data).enter().call(boxplot);
 
 });
 
 d3.box = function() {
 
+  var diagramWidth = 0;
+  var displayLast = -1;
   var width = 30;
   var width2 = width / 2;
-  var offsetX = 100;
-  var offsetDelta = offsetX - (width / 2);
-  var offsetDelta2 = offsetX - (width / 4);
 
   function box(g) {
 
-    g.each(function(d, i) {
+    var skip = 0;
+    var length = 0;
+
+    g.each(function(d, i, node) {
+
+      if (length == 0) {
+        length = node.length;
+      }
+
+      if (i == 0 && displayLast > 0 && node.length > displayLast) {
+        skip = node.length - displayLast;
+        length = displayLast;
+      }
+      if (skip > i) {
+        return;
+      }
+
+      var delta = diagramWidth / length / 2;
+      var offsetX = (diagramWidth / length) * (i - skip) + delta;
+      var offsetDelta = offsetX - (width / 2);
+      var offsetDelta2 = offsetX - (width / 4);
+
       var g = d3.select(this);
 
       g.append('line')
@@ -121,10 +146,21 @@ d3.box = function() {
           .attr('transform', 'rotate(-60)')
           .text(function(d) { return d.date; })
       ;
-
-      console.log('n', d);
     })
 
+  }
+
+  box.diagramWidth = function(x) {
+    if (!arguments.length) return diagramWidth;
+    diagramWidth = +x;
+    return box;
+  }
+
+  box.displayLast = function(x) {
+    if (!arguments.length) return displayLast;
+    displayLast = Math.floor(+x);
+    if (displayLast <= 0) displayLast = -1;
+    return box;
   }
 
   return box;
